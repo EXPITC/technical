@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "client": "npm start --prefix ../Web",
+    "client": "npm start --prefix ../AngularApp",
     "dev": "concurrently \"npm start\" \"npm run client\" "
   },
   "keywords": [],

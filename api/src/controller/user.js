@@ -9,9 +9,9 @@ exports.addUser = async (req, res) => {
         const { email } = data;
         function getValues () {
             return new Promise((resolve) => {
-                client.get(`${email}`, async (error, data) => {
+                client.get(`${email}`, async (error, dataRes) => {
                     if(error) console.log(error)
-                    if (data != null) return resolve(JSON.parse(data))
+                    if (dataRes != null) return resolve(JSON.parse(dataRes))
                     
                     return resolve(await users.findOne({
                         where: { email }
@@ -31,12 +31,14 @@ exports.addUser = async (req, res) => {
 
         const response = await users.create({
             ...data,
+            role:2,
             password:  hashPass,
         }, {
             attributes: {
                 exclude:['password','createdAt','updatedAt']
             }
         })
+        console.log(data)
         client.set(`${email}`, JSON.stringify(response))
         res.status(200).send({
             status: 'success',
@@ -164,15 +166,20 @@ exports.updateProfile = async (req, res) =>{
 exports.updateProfileAdmin = async (req, res) =>{
     try {
         const {id} = req.params
-        const data = req.body
+        console.log(id)
+        const data= req.body
+        console.log(data)
         const res = await users.update({
-            ...data,
+            ...data
         }, {
             where: {id}
         })
-        client.del(`${res.email}`)
-        client.set(`${res.email}`, JSON.stringify(res))
-
+        const response = await user.findOne({
+           where: {email : data.email} 
+        })
+        client.del(`${response.email}`)
+        client.set(`${response.email}`, JSON.stringify(response))
+        console.log(response)
         res.send({
             status: 'success',
             message: 'user successfully update' 
@@ -238,6 +245,28 @@ exports.updatePass = async (req, res) =>{
         })
     }
 }
+// forget pass 
+exports.forgotPass = async (req, res) => {
+    try {
+        const { email, name } = req.body
+        const response = await users.findOne({
+            where: { email, name }
+        })
+        if (!response) {
+            return res.status(200).send({
+                status: 'failed user not found'
+            })
+        }
+        res.status(201).send({
+            status: 'pass'
+        })
+    } catch (err) {
+        res.status(409).send({
+            status: 'failed',
+            message: err.message
+        })
+    }
+}
 // delete #admin
 exports.delUser = async (req, res) =>{
     try {
@@ -250,6 +279,30 @@ exports.delUser = async (req, res) =>{
         res.send({
             status: 'success',
             message: 'user successfully destroy' 
+        })
+        
+    } catch (err) {
+        res.status(409).send({
+            status: 'failed',
+            message: 'server error: ' + err.message
+        })
+    }
+}
+
+exports.alluser = async (req, res) => {
+    try {
+        const {id} = req.params
+        const response = await users.findAll({
+            where : {
+                role : 2
+            },
+            attributes: {
+                exclude:['password','createdAt','updatedAt']
+            }
+        })
+
+        res.send({
+           response
         })
         
     } catch (err) {
