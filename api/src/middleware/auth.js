@@ -205,3 +205,35 @@ exports.relogin = async (req, res) => {
         })
     }
 }
+
+exports.passCheck = async (req, res) => {
+    try {
+        console.log('passCheck')
+        console.log(req)
+        const data = new Promise(resolve => {
+            client.get('user', (err, data) => {
+                return resolve(JSON.parse(data))
+            })
+        })
+        const { email } = await data
+        const {password} = await users.findOne({
+            where : { email }
+        })
+        const valid = await bcrypt.compare(req.body.password, password)
+        if (!valid) {
+            return res.status(400).send({
+                status: 'failed',
+                message: 'password wrong'
+            })
+        }
+        res.status(200).send({
+            status: 'success',
+            message: 'good to go'
+        })
+    } catch (err) {
+        res.status(500).send({
+            status: 'failed',
+            message: 'server error: ' + err.message
+        })
+    }
+}

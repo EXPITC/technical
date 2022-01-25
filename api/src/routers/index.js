@@ -8,14 +8,15 @@ const {
 const {
     register,
     login,
-    relogin
-
+    relogin,
+    passCheck
 } = require('../middleware/auth')
 
 router.post('/register', register)
 router.post('/login', login)
-router.get('/login', token , relogin)
+router.get('/login', token, relogin)
 
+router.post('/pass/check', token, passCheck)
 
 const {
     addUser,
@@ -37,19 +38,19 @@ const {
 
 // admin
     // post
-router.post('/create/user',  addUser)
-// router.post('/create/user', token, admin, addUser)
+// router.post('/create/user',  addUser)
+router.post('/create/user', token, admin, addUser)
     // get
 router.get('/user/:id', token, admin, getProfile)
     // patch
-router.patch('/update/user/:id', updateProfileAdmin)
-// router.patch('/update/user/:id', token, admin, updateProfileAdmin)
+// router.patch('/update/user/:id', updateProfileAdmin)
+router.patch('/update/user/:id', token, admin, updateProfileAdmin)
 router.patch('/user/resetPass/:id',token, admin, updatePassAdmin)
     // del
 router.delete('/del/user/:id', token, admin, delUser)
 
 // all
-router.get('/list/user', alluser)
+router.get('/list/user', token, admin,alluser)
 router.get('/list/route', listRoute)
 router.get('/list/RBAC', RBAC)
 router.get('/view/profile', token, profileMe)

@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 //components
 import LandingPage from '../components/LandingPage'
 import Home from '../components/Home'
+import Client from '../components/Client'
 
 import {API, handleError} from '../config/api'
 import { UserContext } from '../Context/userContext';
@@ -17,8 +18,11 @@ const RouterSetup = () => {
     const check = async () => {
       try {
         const res = await API.get('/login')
+        console.log(res)
         const verify = jwt.verify(res.data.token, process.env.REACT_APP_JWT_TOKEN);
-        const {role } = verify
+        const { role } = verify
+        console.log(verify)
+        console.log(role)
         dispatch({
           status: 'login',
           payload: {...res.data,role}
@@ -34,7 +38,7 @@ const RouterSetup = () => {
   const { isLogin, user } = state
   console.log(isLogin)
   let isAdmin = false
-  if (user.role === 'admin') {
+  if (user.role === 1) {
     isAdmin = true
   }
     return (
@@ -42,7 +46,15 @@ const RouterSetup = () => {
             <Routes>
           {isLogin ?
             <>
-              <Route path="/" element={<Home/>}/>
+              {isAdmin ?
+                <>
+                  <Route path="/" element={<Home />} />
+                </>  
+                :
+                <>
+                  <Route path="/" element={<Client />} />
+                </>  
+              }  
              </>
             :
             <Route exact path="/" element={<LandingPage />} />}

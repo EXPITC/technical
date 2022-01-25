@@ -66,32 +66,37 @@ exports.profileMe = async (req, res) => {
             })
         })
         const { email, id } = await data
-        const userData = client.get(`${email}`)
-        if (!userData) {
-            const user = users.findOne({
+        console.log(email)
+        const userData = new Promise(resolve => {
+            client.get(`${email}`, (err, data) => {
+                return resolve(JSON.parse(data))
+            })
+        })
+        console.log(await userData)
+        if (await !userData) {
+            const user = await users.findOne({
+                where: { id },
                 attributes: {
                     exclude:['password','createdAt','updatedAt']
-                },
-                where: { id }
+                }
             })
+            console.log(user)
             if (!user) return res.send(400).send({
                 status: 'fail',
                 message: 'user details found'
             })
 
-            res.status(200).send({
+            return res.status(200).send({
                 status: 'success',
                 message: 'user successfully retrieved',
-                data: {
-                    user: user
-                }
+                data: user
             })
         }
         res.status(200).send({
             status: 'success',
             message: 'user successfully retrieved',
             data: {
-                user: JSON.stringify(userData)
+                user: await userData
             }
         })
     } catch (err) {
@@ -143,13 +148,26 @@ exports.updateProfile = async (req, res) =>{
         })
         const { id } = await user
         const data = req.body
-        const res = await users.update({
-            ...data,
-        }, {
-            where: {id}
-        })
-        client.del(`${res.email}`)
-        client.set(`${res.email}`, JSON.stringify(res))
+        if (data.password) {
+            console.log('hit')
+            const salt = await bcrypt.genSalt(8)
+            const hashPass = await bcrypt.hash(req.body.password, salt)
+            await users.update({
+                ...data,
+                password: hashPass
+            }, {
+                where: { id }
+            })
+        } else {
+            console.log('miss')
+            await users.update({
+                ...data,
+            }, {
+                where: { id }
+            })
+        }
+        client.del(`${data.email}`)
+        client.set(`${data.email}`, JSON.stringify(res))
         res.send({
             status: 'success',
             message: 'user successfully update' 
@@ -169,17 +187,29 @@ exports.updateProfileAdmin = async (req, res) =>{
         console.log(id)
         const data= req.body
         console.log(data)
-        const res = await users.update({
-            ...data
-        }, {
-            where: {id}
-        })
-        const response = await user.findOne({
+        if (data.password != '') {
+            const salt = await bcrypt.genSalt(8)
+            const hashPass = await bcrypt.hash(req.body.password, salt)
+            await users.update({
+                ...data,
+                password: hashPass
+            }, {
+                where: {id}
+            })
+        } else {
+            let noPass = Object.fromEntries(Object.entries(data).filter(([_, v]) => v != ''));
+            await users.update({
+                ...data
+            }, {
+                where: {id}
+            })
+        }
+        const response = await users.findOne({
            where: {email : data.email} 
         })
-        client.del(`${response.email}`)
+        client.del(`${data.email}`)
         client.set(`${response.email}`, JSON.stringify(response))
-        console.log(response)
+        // console.log(response)
         res.send({
             status: 'success',
             message: 'user successfully update' 
@@ -225,9 +255,10 @@ exports.updatePass = async (req, res) =>{
             })
         })
         const { id } = await user
-        const data  = req.body
+        const salt = await bcrypt.genSalt(8)
+        const hashPass = await bcrypt.hash(req.body.password, salt)
         const response = await users.update({
-            password: data
+            password: hashPass
         }, {
             where: {id}
         })
@@ -270,11 +301,14 @@ exports.forgotPass = async (req, res) => {
 // delete #admin
 exports.delUser = async (req, res) =>{
     try {
-        const {id} = req.params
-        const response = await users.destroy({
+        const { id } = req.params
+        const {email} = await users.findOne({
+            where:{id}
+        })
+        await users.destroy({
             where: {id}
         })
-        client.del(`${response.email}`)
+        client.del(`${email}`)
 
         res.send({
             status: 'success',
