@@ -199,7 +199,7 @@ exports.updateProfileAdmin = async (req, res) =>{
         } else {
             let noPass = Object.fromEntries(Object.entries(data).filter(([_, v]) => v != ''));
             await users.update({
-                ...data
+                ...noPass
             }, {
                 where: {id}
             })
@@ -226,9 +226,10 @@ exports.updateProfileAdmin = async (req, res) =>{
 exports.updatePassAdmin = async (req, res) =>{
     try {
         const {id} = req.params
-        const data = req.body
+        const salt = await bcrypt.genSalt(8)
+        const hashPass = await bcrypt.hash(req.body.password, salt)
         const response = await users.update({
-            password: data
+            password: hashPass
         }, {
             where: {id}
         })
@@ -279,9 +280,13 @@ exports.updatePass = async (req, res) =>{
 // forget pass 
 exports.forgotPass = async (req, res) => {
     try {
+        console.log("hit")
         const { email, name } = req.body
         const response = await users.findOne({
-            where: { email, name }
+            where: {
+                email,
+                name
+            }
         })
         if (!response) {
             return res.status(200).send({
@@ -289,7 +294,8 @@ exports.forgotPass = async (req, res) => {
             })
         }
         res.status(201).send({
-            status: 'pass'
+            status: 'pass',
+            id: response.id
         })
     } catch (err) {
         res.status(409).send({

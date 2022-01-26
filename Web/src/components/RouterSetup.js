@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from '../components/LandingPage'
 import Home from '../components/Home'
 import Client from '../components/Client'
+import ForgetPassPage from '../components/ForgetPass'
 
 import {API, handleError} from '../config/api'
 import { UserContext } from '../Context/userContext';
@@ -49,16 +50,20 @@ const RouterSetup = () => {
               {isAdmin ?
                 <>
                   <Route path="/" element={<Home />} />
-                </>  
+                </>
                 :
                 <>
                   <Route path="/" element={<Client />} />
-                </>  
-              }  
-             </>
+                </>
+              }
+            </>
             :
-            <Route exact path="/" element={<LandingPage />} />}
-                <Route path="*" element={<><h1>Error 404 </h1></>}/>
+            <>
+            <Route exact path="/" element={<LandingPage />} />
+            <Route exact path="/forget/password" element={<ForgetPassPage />} />
+            </>
+          }
+            <Route path="*" element={<><h1>Error 404 </h1></>}/>
             </Routes>
     </Router>
     )

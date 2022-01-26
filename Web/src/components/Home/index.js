@@ -46,9 +46,11 @@ const Home = () => {
     const [showReset, setShowReset] = useState(false)
     const [show, setShow] = useState(false);
     const [showA, setShowA] = useState(true);
+    const [isNew, setIsNew] = useState(false);
+        // handle
     const toggleShowA = () => { setShowA(!showA); setTimer(!timer);};
-    const [isNew , setIsNew] = useState(false);
     const handleClose = () => setShow(false);
+
     const handleShow = (state, data) => {
         setShow(true)
         switch (state) {

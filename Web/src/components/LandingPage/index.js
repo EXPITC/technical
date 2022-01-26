@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext} from 'react';
+import React, { useState, useContext} from 'react';
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../../Context/userContext';
 import { API, handleError } from '../../config/api';
+import { Link } from 'react-router-dom';
 
 
 import { Wrapper , Bg , InputSection} from './LandingPage.styled';
@@ -52,7 +53,10 @@ const LandingPage = () => {
             <h2>Login</h2>
             <InputSection type="email" name="email" placeholder="email" onChange={handelChange}/>
             <InputSection type="password" name="password" placeholder="password"  onChange={handelChange}/>
-            <button class="btnlogin2" onClick={handelLogin}>LOGIN</button>
+            <button class="btnlogin2" onClick={handelLogin}>LOGIN </button>
+            <Link to="/forget/password" style={{textDecoration: 'none',color:"black"}} >
+                <p>Forget Password &#8594;</p>
+            </Link>
         </Wrapper>
         </Bg>
         </>
